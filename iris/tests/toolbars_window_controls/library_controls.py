@@ -16,6 +16,21 @@ class test(base_test):
         self.meta = "This is a test of the library window controls"
 
 
+    def maximize_library_osx(self):
+        library_controls = "library_controls.png"
+
+        # Set target to the maximize button
+        maximize_button = Pattern(library_controls).targetOffset(21, 0)
+
+        # We must hover the controls so the ALT key can take effect there.
+        hover(library_controls)
+
+        # Alt key changes maximize button from full screen to maximize window.
+        keyDown(Key.ALT)
+        click(maximize_button)
+        keyUp(Key.ALT)
+
+
     def run(self):
         open_library()
         time.sleep(1)
@@ -53,7 +68,7 @@ class test(base_test):
                     result = "FAIL"
                     return
 
-            else:
+            elif get_os() == "win":
                 maximize_window()
                 time.sleep(1)
             
@@ -77,6 +92,16 @@ class test(base_test):
                 minimize_window()
                 time.sleep(1)
 
+            else:
+                self.maximize_library_osx()
+                time.sleep(1)
+
+                self.maximize_library_osx()
+                time.sleep(1)
+
+                minimize_window()
+                time.sleep(1)
+
             if waitVanish("library_title.png", 10):
                 logger.debug("window successfully minimized")
             else:
@@ -84,7 +109,23 @@ class test(base_test):
                 logger.error("window not minimized, aborting test")
                 return
 
-            restore_window_from_taskbar()
+            if get_os() == "osx":
+                type(text=Key.DOWN, modifier=KeyModifier.CTRL)
+                time.sleep(0.5)
+                keyDown(Key.DOWN)
+                keyUp(Key.DOWN)
+                keyDown(Key.ENTER)
+                keyUp(Key.ENTER)
+
+            else:
+                restore_window_from_taskbar()
+
+            if exists("library_title.png", 10):
+                print "The library was restored successfully"
+            else:
+                print "The library was not restored"
+                result = "FAIL"
+                return
 
         else:
             print "The library was not opened"
